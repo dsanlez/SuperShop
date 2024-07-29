@@ -24,13 +24,24 @@ namespace SuperShop.Data.Entities
         public DateTime? LastSale { get; set; }
 
         [Display(Name = "Is Avaible")]
-        public bool IsAvaible { get; set; }
+        public bool IsAvailable { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:N2}", ApplyFormatInEditMode = false)]
         public double Stock { get; set; }
 
         public User User { get; set; }
 
+        public string ImageFullPath 
+        {
+            get
+            {
+                if(string.IsNullOrEmpty(ImageUrl))
+                {
+                    return null;
+                }
 
+                return $"https://localhost:44361{ImageUrl.Substring(1)}";
+            }
+        }
     }
 }

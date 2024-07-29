@@ -62,7 +62,7 @@ namespace SuperShop.Data
             {
                 Name  = name,
                 Price = _random.Next(1000),
-                IsAvaible = true,
+                IsAvailable = true,
                 Stock = _random.Next(100),
                 User = user
             });

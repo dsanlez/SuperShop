@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using SuperShop.Data;
 using SuperShop.Data.Entities;
 using SuperShop.Helpers;
+using SuperShop.Models;
+using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,12 +15,18 @@ namespace SuperShop.Controllers
     {
         private readonly IProductRepository _productRepository;
         private readonly IUserHelper _userHelper;
+        private readonly IImageHelper _imageHelper;
+        private readonly IConverterHelper _converterHelper;
 
-        public ProductsController(IProductRepository productRepository, 
-            IUserHelper userHelper)
+        public ProductsController(IProductRepository productRepository,
+            IUserHelper userHelper,
+            IImageHelper imageHelper,
+            IConverterHelper converterHelper)
         {
             _productRepository = productRepository;
             _userHelper = userHelper;
+            _imageHelper = imageHelper;
+            _converterHelper = converterHelper;
         }
 
         // GET: Products
@@ -55,18 +64,29 @@ namespace SuperShop.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Price,ImageUrl,LastPurchase,LastSale,IsAvaible,Stock")] Product product)
+        public async Task<IActionResult> Create(ProductViewModel model)
         {
             if (ModelState.IsValid)
             {
+                var path = string.Empty;
+
+                if (model.ImageFile != null && model.ImageFile.Length > 0)
+                {
+                    path = await _imageHelper.UploadImageAsync(model.ImageFile, "products");
+                }
+
+                var product = _converterHelper.ToProduct(model, path, true);
+
                 //TODO: Modificar para o user que estiver logado
                 product.User = await _userHelper.GetUserByEmailAsync("diogosdl25@hotmail.com");
                 await _productRepository.CreateAsync(product);
 
                 return RedirectToAction(nameof(Index));
             }
-            return View(product);
+            return View(model);
         }
+
+        
 
         // GET: Products/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -82,25 +102,34 @@ namespace SuperShop.Controllers
             {
                 return NotFound();
             }
-            return View(product);
+
+            var model = _converterHelper.ToProductViewModel(product);
+            return View(model);
         }
+
+        
 
         // POST: Products/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price,ImageUrl,LastPurchase,LastSale,IsAvaible,Stock")] Product product)
+        public async Task<IActionResult> Edit(ProductViewModel model)
         {
-            if (id != product.Id)
-            {
-                return NotFound();
-            }
 
             if (ModelState.IsValid)
             {
                 try
                 {
+                    var path = model.ImageUrl;
+
+                    if (model.ImageFile != null && model.ImageFile.Length > 0)
+                    {
+                        path = await _imageHelper.UploadImageAsync(model.ImageFile, "products");
+                    }
+
+                    var product = _converterHelper.ToProduct(model, path, false);
+
                     //TODO: Modificar para o user que estiver logado
                     product.User = await _userHelper.GetUserByEmailAsync("diogosdl25@hotmail.com");
                     await _productRepository.UpdateAsync(product);
@@ -108,7 +137,7 @@ namespace SuperShop.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!await _productRepository.ExistsAsync(product.Id))
+                    if (!await _productRepository.ExistsAsync(model.Id))
                     {
                         return NotFound();
                     }
@@ -119,7 +148,7 @@ namespace SuperShop.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(product);
+            return View(model);
         }
 
         // GET: Products/Delete/5

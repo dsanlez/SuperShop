@@ -24,8 +24,6 @@ namespace SuperShop
                 var seeder = scope.ServiceProvider.GetService<SeedDb>();
                 seeder.SeedAsync().Wait();
             }
-
-
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
