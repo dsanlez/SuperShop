@@ -21,11 +21,14 @@ namespace SuperShop.Data
             _random = new Random();
         }
 
+        public IUserHelper UserManager { get; }
+
         public async Task SeedAsync()
         {
             await _context.Database.EnsureCreatedAsync();
 
             var user = await _userHelper.GetUserByEmailAsync("diogosdl25@hotmail.com");
+
             if (user == null)
             {
                 user = new User
@@ -33,15 +36,15 @@ namespace SuperShop.Data
                     FirstName = "Diogo",
                     LastName = "Sanlez",
                     Email = "diogosdl25@hotmail.com",
-                    UserName  = "DiogoSanlez",
+                    UserName  = "diogosdl25@hotmail.com",
                     PhoneNumber = "1234567890",
                 };
 
                 var result = await _userHelper.AddUserAsync(user, "123456");
+
                 if (result != IdentityResult.Success) 
                 {
-                    throw new InvalidOperationException("Couldn't create the user in seeder");
-                    
+                    throw new InvalidOperationException("Couldn't create the user in seeder");                    
                 }
             }
 
