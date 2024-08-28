@@ -78,8 +78,8 @@ namespace SuperShop.Controllers
 
                 var product = _converterHelper.ToProduct(model, imageId, true);
 
-                //TODO: Modificar para o user que estiver logado
-                product.User = await _userHelper.GetUserByEmailAsync("diogosdl25@hotmail.com");
+                
+                product.User = await _userHelper.GetUserByEmailAsync(this.User.Identity.Name);
                 await _productRepository.CreateAsync(product);
 
                 return RedirectToAction(nameof(Index));
@@ -133,7 +133,7 @@ namespace SuperShop.Controllers
                     var product = _converterHelper.ToProduct(model, imageId, false);
 
                     //TODO: Modificar para o user que estiver logado
-                    product.User = await _userHelper.GetUserByEmailAsync("diogosdl25@hotmail.com");
+                    product.User = await _userHelper.GetUserByEmailAsync(this.User.Identity.Name);
                     await _productRepository.UpdateAsync(product);
 
                 }
