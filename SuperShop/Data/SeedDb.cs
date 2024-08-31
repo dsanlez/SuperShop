@@ -10,14 +10,14 @@ namespace SuperShop.Data
     public class SeedDb
     {
         private readonly DataContext _context;
-        private readonly IUserHelper _userHelper;       
+        private readonly IUserHelper _userHelper;
         private Random _random;
 
         public SeedDb(DataContext context, IUserHelper userHelper)
         {
             _context = context;
             _userHelper = userHelper;
-            
+
             _random = new Random();
         }
 
@@ -26,6 +26,9 @@ namespace SuperShop.Data
         public async Task SeedAsync()
         {
             await _context.Database.EnsureCreatedAsync();
+
+            await _userHelper.CheckRoleAsync("Admin");
+            await _userHelper.CheckRoleAsync("Customer");
 
             var user = await _userHelper.GetUserByEmailAsync("diogosdl25@hotmail.com");
 
@@ -36,19 +39,28 @@ namespace SuperShop.Data
                     FirstName = "Diogo",
                     LastName = "Sanlez",
                     Email = "diogosdl25@hotmail.com",
-                    UserName  = "diogosdl25@hotmail.com",
+                    UserName = "diogosdl25@hotmail.com",
                     PhoneNumber = "1234567890",
                 };
 
                 var result = await _userHelper.AddUserAsync(user, "123456");
 
-                if (result != IdentityResult.Success) 
+                if (result != IdentityResult.Success)
                 {
-                    throw new InvalidOperationException("Couldn't create the user in seeder");                    
+                    throw new InvalidOperationException("Couldn't create the user in seeder");
                 }
+
+                await _userHelper.AddUserToRoleAsync(user, "Admin");
             }
 
-            if(!_context.Products.Any()) 
+            var isInRole = await _userHelper.IsUserInRoleAsync(user, "Admin");
+
+            if (!isInRole)
+            {
+                await _userHelper.AddUserToRoleAsync(user, "Admin");
+            }
+
+            if (!_context.Products.Any())
             {
                 AddProduct("Iphone X", user);
                 AddProduct("Iphone XV", user);
@@ -63,7 +75,7 @@ namespace SuperShop.Data
         {
             _context.Products.Add(new Product
             {
-                Name  = name,
+                Name = name,
                 Price = _random.Next(1000),
                 IsAvailable = true,
                 Stock = _random.Next(100),
