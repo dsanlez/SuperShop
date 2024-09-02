@@ -77,12 +77,15 @@ namespace SuperShop.Controllers
                         UserName = model.Username
                     };
 
+                                      
                     var result = await _userHelper.AddUserAsync(user, model.Password);
                     if (result != IdentityResult.Success)
                     {
                         ModelState.AddModelError(string.Empty, "The user couldn't be created");
                         return View(model);
                     }
+
+                    await _userHelper.AddUserToRoleAsync(user, "Customer");
 
                     var loginViewModel = new LoginViewModel
                     {
@@ -175,6 +178,11 @@ namespace SuperShop.Controllers
                 }
             }
             return this.View(model);
+        }
+
+        public IActionResult NotAuthorized()
+        {
+            return View();
         }
     }
 }
