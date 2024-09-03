@@ -7,13 +7,13 @@ namespace SuperShop.Helpers
 {
     public class ConverterHelper : IConverterHelper
     {
-        public Product ToProduct(ProductViewModel model, Guid imageId, bool isNew)
+        public Product ToProduct(ProductViewModel model, string path /*Guid imageId*/, bool isNew)
         {
 
             return new Product
             {
                 Id = isNew? 0 : model.Id,
-                ImageId = imageId,
+                ImageUrl = path,
                 IsAvailable = model.IsAvailable,
                 LastPurchase = model.LastPurchase,
                 LastSale = model.LastSale,
@@ -29,7 +29,7 @@ namespace SuperShop.Helpers
             return new ProductViewModel
             {
                 Id = product.Id,
-                ImageId = product.ImageId,
+                ImageUrl = product.ImageUrl,
                 IsAvailable = product.IsAvailable,
                 LastPurchase = product.LastPurchase,
                 LastSale = product.LastSale,

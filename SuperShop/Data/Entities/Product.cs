@@ -14,8 +14,12 @@ namespace SuperShop.Data.Entities
         [DisplayFormat(DataFormatString = "{0:C2}", ApplyFormatInEditMode = false)]
         public decimal Price { get; set; }
 
+        //[Display(Name = "Image")]
+        //public Guid ImageId { get; set; }
+
         [Display(Name = "Image")]
-        public Guid ImageId { get; set; }
+        public string ImageUrl { get; set; }
+
 
         [Display(Name = "Last Purchase")]
         public DateTime? LastPurchase { get; set; }
@@ -31,11 +35,24 @@ namespace SuperShop.Data.Entities
 
         public User User { get; set; }
 
-        public string ImageFullPath => ImageId == Guid.Empty ?
+        public string ImageFullPath
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(ImageUrl))
+                {
+                    return null;
+                }
 
-            $"https://supershopds.azurewebsites.net/images/imagenotfound.png" :
+                return $"https://localhost:44361{ImageUrl.Substring(1)}";
+            }
+        }
 
-            $"https://supershopds.blob.core.windows.net/products/{ImageId}";
+        //public string ImageFullPath => ImageId == Guid.Empty ?
+
+        //    $"https://supershopds.azurewebsites.net/images/imagenotfound.png" :
+
+        //    $"https://supershopds.blob.core.windows.net/products/{ImageId}";
 
     }
 }

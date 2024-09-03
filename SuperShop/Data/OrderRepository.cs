@@ -21,14 +21,14 @@ namespace SuperShop.Data
         public async Task AddItemToOrderAsync(AddItemViewModel model, string userName)
         {
             var user = await _userHelper.GetUserByEmailAsync(userName);
-            if(user == null)
+            if (user == null)
             {
                 return;
             }
 
             var product = await _context.Products.FindAsync(model.ProductId);
 
-            if(product == null)
+            if (product == null)
             {
                 return;
             }
@@ -37,7 +37,7 @@ namespace SuperShop.Data
                 .Where(odt => odt.User == user && odt.Product == product)
                 .FirstOrDefaultAsync();
 
-            if(orderDetailTemp == null) 
+            if (orderDetailTemp == null)
             {
                 orderDetailTemp = new OrderDetailTemp
                 {
@@ -59,6 +59,18 @@ namespace SuperShop.Data
             await _context.SaveChangesAsync();
         }
 
+        public async Task DeleteTempAsync(int id)
+        {
+            var orderDetailTemp = await _context.OrderDetailsTemp.FindAsync(id);
+
+            if (orderDetailTemp == null)
+            { 
+                return; 
+            }
+            _context.OrderDetailsTemp.Remove(orderDetailTemp);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<IQueryable<OrderDetailTemp>> GetDetailsTempsAsync(string userName)
         {
             var user = await _userHelper.GetUserByEmailAsync(userName);
@@ -67,9 +79,9 @@ namespace SuperShop.Data
             {
                 return null;
             }
-           
-            return _context.OrderDetailsTemp                
-                .Include(p => p.Product)                 
+
+            return _context.OrderDetailsTemp
+                .Include(p => p.Product)
                 .Where(o => o.User == user)
                 .OrderByDescending(o => o.Product.Name);
         }
