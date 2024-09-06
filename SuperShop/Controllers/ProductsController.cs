@@ -184,10 +184,28 @@ namespace SuperShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var product = await _productRepository.GetByIdAsync(id);
-            await _productRepository.DeleteAsync(product);
 
-            return RedirectToAction(nameof(Index));
+            // Check the table if the product is still there
+            var product = await _productRepository.GetByIdAsync(id);                    
+
+            try
+            {
+                //throw new Exception("Excepção de teste"); 
+                await _productRepository.DeleteAsync(product);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateException ex)
+            {
+                if (ex.InnerException != null && ex.InnerException.Message.Contains("DELETE"))
+                {
+                    ViewBag.ErrorTitle = $"{product.Name} provavelmente está a ser usado.";
+                    ViewBag.ErrorMessage = $"{product.Name} não pode ser apagado visto haver encomendas que o usam.</br></br>" +
+                        $"Experimente primeiro apagar todas as encomendas que o estão a usar," +
+                        $" e torne novamente a apagá-lo.";
+                }
+
+                return View("Error");
+            }
         }
 
         public IActionResult ProductNotFound()
