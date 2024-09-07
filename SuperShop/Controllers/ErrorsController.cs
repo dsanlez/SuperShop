@@ -13,7 +13,6 @@ namespace SuperShop.Controllers
         }
 
         [Route("error/404")]
-
         public IActionResult Error404()
         {
             return View();
