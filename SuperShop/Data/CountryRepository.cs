@@ -65,7 +65,7 @@ namespace SuperShop.Data
 
             if (country != null)
             {
-                list = _context.Countries.Select(c => new SelectListItem
+                list = _context.Cities.Select(c => new SelectListItem
                 {
                     Text = c.Name,
                     Value = c.Id.ToString(),
