@@ -22,13 +22,17 @@ namespace SuperShop.Controllers
         private readonly IUserHelper _userHelper;
         private readonly IConfiguration _configuration;
         private readonly ICountryRepository _countryRepository;
+        private readonly IEmailHelper _emailHelper;
+
         public AccountController(
             IUserHelper userHelper,
            IConfiguration configuration,
-            ICountryRepository countryRepository)
+            ICountryRepository countryRepository,
+            IEmailHelper emailHelper)
         {
             _userHelper = userHelper;
             _countryRepository = countryRepository;
+            _emailHelper = emailHelper;
             _configuration = configuration;
         }
 
@@ -102,8 +106,7 @@ namespace SuperShop.Controllers
                         PhoneNumber = model.PhoneNumber,
                         CityId = model.CityId,
                         City = city,
-                    };
-
+                    };                   
 
                     var result = await _userHelper.AddUserAsync(user, model.Password);
 
@@ -115,21 +118,34 @@ namespace SuperShop.Controllers
 
                     await _userHelper.AddUserToRoleAsync(user, "Customer");
 
-                    var loginViewModel = new LoginViewModel
-                    {
-                        Password = model.Password,
-                        RememberMe = false,
-                        Username = model.Username
-                    };
+                    var isInRole = await _userHelper.IsUserInRoleAsync(user, "Customer");
 
-                    var result2 = await _userHelper.LoginAsync(loginViewModel);
-                    if (result2.Succeeded)
+                    if (!isInRole)
                     {
-                        return RedirectToAction("Index", "Home");
+                        await _userHelper.AddUserToRoleAsync(user, "Customer");
                     }
 
-                    ModelState.AddModelError(string.Empty, "The user couldn't be logged");
+                    string myToken = await _userHelper.GenerateEmailConfirmationTokenAsync(user);
 
+                    string tokenLink = Url.Action("ConfirmEmail", "Account", new
+                    {
+                        userId = user.Id,
+                        token = myToken,
+
+                    }, protocol: HttpContext.Request.Scheme);
+
+
+                    Response response = _emailHelper.SendEmail(model.Username, "Email confirmation", $"<h1>Email confirmation</h1>" +
+                           $"To allow the user," +
+                           $"please click on this link:</br></br><a href= \"{tokenLink}\">Confirm Email</a>");
+
+                    if (response.IsSuccess)
+                    {
+                        ViewBag.Message = "The instructions to grant access to your user have been sent to your email";
+
+                        return View(model);
+                    }
+                    ModelState.AddModelError(string.Empty, "The user couldn't be logged");
                 }
             }
             return View(model);
@@ -279,6 +295,98 @@ namespace SuperShop.Controllers
 
             return BadRequest();
         }
+
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+            {
+                return NotFound();
+            }
+
+            var user = await _userHelper.GetUserByIdAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var result = await _userHelper.ConfirmEmailAsync(user, token);
+
+            if (!result.Succeeded)
+            {
+                return NotFound();
+            }
+
+            return View();
+        }
+
+        public IActionResult RecoverPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RecoverPassword(RecoverPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userHelper.GetUserByEmailAsync(model.Email);
+
+                if (user == null)
+                {
+                    ModelState.AddModelError(string.Empty, "The email doesn't match a registered username.");
+                    return View(model);
+                }
+
+                var myToken = await _userHelper.GeneratePasswordResetTokenAsync(user);
+
+                var link = Url.Action(
+                    "Reset password",
+                    "Account",
+                    new { token = myToken }, protocol: HttpContext.Request.Scheme);
+
+                Response response = _emailHelper.SendEmail(model.Email, "Shop Password Reset", $"<h1>Shop Password Reset</h1>" +
+                    $"To reset the password click on the link:</br></br>" +
+                    $"<a href= \"{link}\">Reset Password</a>");
+
+                if (response.IsSuccess)
+                {
+                    ViewBag.Message = "The instructions to recover your password have been sent to your email";
+                }
+
+                return View();
+            }
+
+            return View(model);
+        }
+
+        public IActionResult ResetPassword(string token)
+        {
+            return View();
+        }
+
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            var user = await _userHelper.GetUserByEmailAsync(model.Username);
+
+            if (user != null)
+            {
+                var result = await _userHelper.ResetPasswordAsync(user, model.Token, model.Password);
+
+                if (result.Succeeded)
+                {
+                    ViewBag.Message = "Password successfully reset.";
+                    return View();
+                }
+
+                ViewBag.Message = "Error resetting the password";
+                return View(model);
+            }
+
+            ViewBag.Message = "Username not found.";
+            return View(model);
+        }
+
 
         public IActionResult NotAuthorized()
         {

@@ -37,8 +37,10 @@ namespace SuperShop
                 cfg.Password.RequireLowercase = false;
                 cfg.Password.RequireNonAlphanumeric = false;
                 cfg.Password.RequiredLength = 6;
+                cfg.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
+                cfg.SignIn.RequireConfirmedEmail = true;
             })
-
+            .AddDefaultTokenProviders()
             .AddEntityFrameworkStores<DataContext>();
 
             services.AddAuthentication()
@@ -53,7 +55,7 @@ namespace SuperShop
                             Encoding.UTF8.GetBytes(this.Configuration["Tokens:Key"]))
                     };
                 });
-                
+
 
             services.AddDbContext<DataContext>(cfg =>
             {
@@ -67,6 +69,8 @@ namespace SuperShop
             services.AddScoped<IImageHelper, ImageHelper>();
 
             //services.AddScoped<IBlobHelper, BlobHelper>();
+
+            services.AddScoped<IEmailHelper, EmailHelper>();
 
             services.AddScoped<IConverterHelper, ConverterHelper>();
 
@@ -107,7 +111,7 @@ namespace SuperShop
             app.UseRouting();
 
             app.UseAuthentication();
-            app.UseAuthorization();           
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

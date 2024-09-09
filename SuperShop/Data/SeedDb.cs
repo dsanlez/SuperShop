@@ -19,7 +19,6 @@ namespace SuperShop.Data
         {
             _context = context;
             _userHelper = userHelper;
-
             _random = new Random();
         }
 
@@ -73,6 +72,10 @@ namespace SuperShop.Data
                 }
 
                 await _userHelper.AddUserToRoleAsync(user, "Admin");
+
+                var token = await _userHelper.GenerateEmailConfirmationTokenAsync(user);
+
+                await _userHelper.ConfirmEmailAsync(user, token);
             }
 
             var isInRole = await _userHelper.IsUserInRoleAsync(user, "Admin");
@@ -90,7 +93,6 @@ namespace SuperShop.Data
                 AddProduct("SmartWatch", user);
                 await _context.SaveChangesAsync();
             }
-
         }
 
         private void AddProduct(string name, User user)
