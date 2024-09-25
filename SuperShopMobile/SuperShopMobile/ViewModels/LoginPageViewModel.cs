@@ -59,9 +59,6 @@ namespace SuperShopMobile.ViewModels
                 Password = string.Empty;
                 return;
             }
-
-           
-
             await App.Current.MainPage.DisplayAlert("Ok", "Your logged!", "Accept");
         }
     }
