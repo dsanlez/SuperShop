@@ -41,7 +41,7 @@ namespace SuperShop.Data.Entities
             {
                 if (string.IsNullOrEmpty(ImageUrl))
                 {
-                    return null;
+                    return "~/images/imagenotfound.png";
                 }
 
                 return $"https://localhost:44361{ImageUrl.Substring(1)}";

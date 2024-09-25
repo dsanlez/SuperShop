@@ -16,5 +16,7 @@ namespace SuperShop.Data
         Task DeleteAsync(T entity);
 
         Task<bool> ExistsAsync(int id);
+
+        
     }
 }

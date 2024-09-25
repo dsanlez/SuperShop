@@ -54,6 +54,6 @@ namespace SuperShop.Data
             return await _context.SaveChangesAsync() > 0;
         }
 
-       
+        
     }
 }
