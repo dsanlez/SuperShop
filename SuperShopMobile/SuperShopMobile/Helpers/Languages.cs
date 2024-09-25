@@ -25,6 +25,8 @@ namespace SuperShopMobile.Helpers
         public static string AddToCart => Resource.AddToCart;
         public static string Loading => Resource.Loading;
         public static string SearchProduct => Resource.SearchProduct;
+        public static string IsAvaible => Resource.IsAvailable;
+        public static string Stock => Resource.Stock;
 
     }
 }

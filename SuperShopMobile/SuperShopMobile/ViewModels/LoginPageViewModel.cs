@@ -1,10 +1,5 @@
 ﻿using Prism.Commands;
-using Prism.Mvvm;
 using Prism.Navigation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 
 namespace SuperShopMobile.ViewModels
 {
@@ -21,7 +16,7 @@ namespace SuperShopMobile.ViewModels
         }
 
         public DelegateCommand LoginCommand => _loginCommand ?? (_loginCommand = new DelegateCommand(Login));
-        
+
         public string Email { get; set; }
 
         public bool IsRunning
@@ -44,9 +39,9 @@ namespace SuperShopMobile.ViewModels
 
         private async void Login()
         {
-           
 
-            if(string.IsNullOrEmpty(Email))
+
+            if (string.IsNullOrEmpty(Email))
             {
                 await App.Current.MainPage.DisplayAlert("Error", "You must enter an email", "Accept");
                 Password = string.Empty;
