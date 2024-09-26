@@ -28,6 +28,12 @@ namespace SuperShopMobile.Helpers
         public static string IsAvaible => Resource.IsAvailable;
         public static string Stock => Resource.Stock;
 
+        public static string Login => Resource.Login;
+
+        public static string Modifyuser => Resource.Modifyuser;
+
+        public static string ShowPurchaseHistory => Resource.ShowPurchaseHistory;
+        public static string ShowShoppingCart => Resource.ShowShoppingCart;
     }
 }
 
